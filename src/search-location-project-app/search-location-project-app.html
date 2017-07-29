@@ -1,0 +1,53 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-marker.html">
+
+<dom-module id="search-location-project-app">
+  <template>
+    <style>
+      :host {
+        display: block;
+        text-align: center;
+      }
+
+      google-map {
+        height: 400px;
+        width: 400px;
+      }
+    </style>
+
+    <h2>[[prop1]]</h2>
+
+    <input type="text" name="search-content" />
+    <input type="button" name="search-button" />
+
+    <google-map fit-to-marker api-key="AIzaSyAMRb-cQRvFBMsKxHKu9OtQE61cORj2b4Y">
+      <google-map-marker latitude="37.78" longitude="-122.4" draggable="true"></google-map-marker>
+    </google-map>
+
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class SearchLocationProjectApp extends Polymer.Element {
+      static get is() { return 'search-location-project-app'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'Search Location Application'
+          }
+        };
+      }
+
+      ready() {
+        super.ready();
+      }
+    }
+
+    window.customElements.define(SearchLocationProjectApp.is, SearchLocationProjectApp);
+  </script>
+</dom-module>

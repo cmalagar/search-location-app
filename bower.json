@@ -1,0 +1,13 @@
+{
+  "name": "search-location-project",
+  "description": "Polymer application that allows a user to search for a location and other special things :)",
+  "main": "index.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0",
+    "google-map": "GoogleWebComponents/google-map#2.0-preview"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  }
+}

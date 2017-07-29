@@ -1,0 +1,7 @@
+{
+  "name": "search-location-project",
+  "short_name": "search-location-project",
+  "description": "Polymer application that allows a user to search for a location and other special things :)",
+  "start_url": "/",
+  "display": "standalone"
+}
