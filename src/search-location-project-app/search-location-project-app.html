@@ -1,50 +1,199 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/google-map/google-map.html">
 <link rel="import" href="../../bower_components/google-map/google-map-marker.html">
+<link rel="import" href="../../bower_components/google-map/google-map-search.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
 
 <dom-module id="search-location-project-app">
   <template>
     <style>
-      :host {
-        display: block;
+      paper-input {
+        width: 50%;
+      }
+
+      .search-location-project-app-header {
+        /*margin: 0 auto;*/
+        /*width: 80%;*/
+        /*padding: 5px;
+        border: 2px solid;*/
+        background-color: #158830;
+        color: #ffffff;
+        top: 0;
+        text-align: center;
+        border-bottom: 1px groove;
+      }
+
+      .search-query-container {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        margin: 0 auto;
+        /*width: 80%;*/
+      }
+
+      .search-results-container {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        margin: 0 auto;
+        /*width: 80%;*/
+        /*padding: 5px;
+        border: 2px solid;*/
+      }
+
+      .search-results-map {
+        /*padding: 5px;
+        border: 2px solid;*/
+      }
+
+      .search-results-list {
+        /*padding: 5px;
+        border: 2px solid;*/
+      }
+
+      .search-results-list-content {
+        height: 400px;
+        width: 400px;
+        overflow: hidden;
+        overflow-y: scroll;
+        border: 2px double;
+      }
+
+      .search-location-project-app-footer {
         text-align: center;
       }
 
       google-map {
         height: 400px;
         width: 400px;
+        margin: 0 auto;
+        border: 2px double;
       }
+
     </style>
 
-    <h2>[[prop1]]</h2>
+    <div class="search-location-project-app-header">
+      <app-header>
+        <app-toolbar sticky>
+          <h2 main-title>[[prop1]]</h2>
+        </app-toolbar>
+      </app-header>
+    </div>
 
-    <input type="text" name="search-content" />
-    <input type="button" name="search-button" />
+    <div class="search-query-container">
+      <paper-input always-float-label label="Location" id="searchText"></paper-input>
+      <paper-button raised on-click="_onSearchLocation">Search</paper-button>
+    </div>
 
-    <google-map fit-to-marker api-key="AIzaSyAMRb-cQRvFBMsKxHKu9OtQE61cORj2b4Y">
-      <google-map-marker latitude="37.78" longitude="-122.4" draggable="true"></google-map-marker>
-    </google-map>
+    <div class="search-results-container">
+      <div class="search-results-map">
+        <h3>Map of Search</h3>
+        <google-map-search id="placesLibrary" query="[[searchQuery]]"
+            results="{{results}}" map="{{map}}"></google-map-search>
+        <google-map map="{{map}}" api-key="AIzaSyAMRb-cQRvFBMsKxHKu9OtQE61cORj2b4Y"
+            id="map" fit-to-markers>
+          <template is="dom-repeat" items="{{results}}">
+            <google-map-marker latitude="{{item.latitude}}"
+                longitude="{{item.longitude}}" title="{{item.name}}">
+            </google-map-marker>
+          </template>
+        </google-map>
+      </div>
+      <div class="search-results-list">
+        <h3>List of Locations</h3>
+        <div class="search-results-list-content">
+          <template is="dom-if" if="[[noListContent]]">
+            <div><h3>No location</h3></div>
+          </template>
+          <template is="dom-if" if="[[!noListContent]]">
+            <template is="dom-repeat" items="{{results}}">
+              <div><a on-click="_goToMarker">{{item.name}}</a></div>
+            </template>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-location-project-app-footer">
+      Cameron Malagar | 2017
+    </div>
 
   </template>
 
   <script>
-    /**
-     * @customElement
-     * @polymer
-     */
+
     class SearchLocationProjectApp extends Polymer.Element {
       static get is() { return 'search-location-project-app'; }
+
       static get properties() {
         return {
           prop1: {
             type: String,
             value: 'Search Location Application'
+          },
+
+          searchQuery: {
+            type: String,
+            notify: true
+          },
+
+          results: {
+            type: Object,
+            notify: true
+          },
+
+          noListContent: {
+            type: Boolean,
+            notify: true,
+            value: true
+          },
+
+          map: {
+            type: Object,
+            notify: true
           }
         };
       }
 
+      static get observers() {
+        return [
+
+        ];
+      }
+
       ready() {
         super.ready();
+
+        this.addEventListener('google-map-search-results', (e) => {
+          console.log("google-map-search-results: ");
+          console.log(e);
+          this.$.map.resize();
+        });
+
+        this.addEventListener('google-map-search-place-details', (e) => {
+          console.log("google-map-search-place-details: ");
+          console.log(e);
+          console.log(this.results);
+        });
+
+        this.addEventListener('results-changed', (e) => {
+          console.log("results-changed");
+          console.log(e);
+          this.noListContent = this.results.length == 0;
+        });
+      }
+
+      _onSearchLocation() {
+        this.searchQuery = this.$.searchText.value;
+        console.log(this.searchQuery);
+        this.$.placesLibrary.search();
+      }
+
+      _goToMarker() {
+        console.log("_goToMarker called");
       }
     }
 
