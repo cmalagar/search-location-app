@@ -1,6 +1,64 @@
 body, html {
   font-family: 'Ubuntu', sans-serif;
-  max-height: 90%;
+  max-height: 100%;
   margin: 0 auto;
   background-color: #f0f5f5;
+}
+
+google-map {
+  border: 1px groove;
+  height: 400px;
+  width: 400px;
+  margin: 0 auto;
+}
+
+paper-input {
+  width: 50%;
+}
+
+.header-subtitle {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.search-location-project-app-footer {
+  text-align: center;
+}
+
+.search-location-project-app-header {
+  background-color: #158830;
+  border-bottom: 1px groove;
+  color: #ffffff;
+  text-align: center;
+}
+
+.search-query-container {
+  border-bottom: 2px groove;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.search-results-container {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-around;
+  margin: 0 auto;
+}
+
+.search-results-list-content {
+  border: 1px groove;
+  height: 400px;
+  overflow-y: scroll;
+  padding: 2px;
+  text-align: center;
+  width: 400px;
+}
+
+.search-results-list-content-element {
+  border-bottom: 1px groove;
+  display: block;
+  padding: 10px;
 }

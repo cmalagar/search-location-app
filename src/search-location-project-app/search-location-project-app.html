@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2017 Cameron Malagar. All rights reserved. -->
+
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/google-map/google-map.html">
 <link rel="import" href="../../bower_components/google-map/google-map-marker.html">
@@ -6,151 +8,203 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
 <link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/geo-location/geo-location.html">
+
+<!--
+The 'search-location-project-app' element renders an application that allows a
+user to search for and find a location on Google Maps and get information
+on the location if the marker is clicked on. If you click on a location in the
+list on the right side, then the map will resize and center onto where the
+location is.
+
+I used the pre-made 'google-map', 'google-map-marker', 'geo-location', and other
+premade Polymer components to make requests to the google-map API and acquire
+the current location of the device of the user.
+ -->
 
 <dom-module id="search-location-project-app">
   <template>
     <style>
+      google-map {
+        border: 1px groove;
+        height: 400px;
+        width: 400px;
+        margin: 0 auto;
+      }
+
       paper-input {
         width: 50%;
       }
 
-      .search-location-project-app-header {
-        /*margin: 0 auto;*/
-        /*width: 80%;*/
-        /*padding: 5px;
-        border: 2px solid;*/
-        background-color: #158830;
-        color: #ffffff;
-        top: 0;
-        text-align: center;
-        border-bottom: 1px groove;
+      .headerSubtitle {
+        display: flex;
+        flex-flow: row nowrap;
       }
 
-      .search-query-container {
+      .searchLocationAppFooter {
+        text-align: center;
+      }
+
+      .searchLocationAppHeader {
+        background-color: #158830;
+        border-bottom: 1px groove;
+        color: #ffffff;
+        text-align: center;
+      }
+
+      .searchQueryContainer {
+        border-bottom: 2px groove;
         display: flex;
         flex-flow: row nowrap;
         justify-content: center;
         margin: 0 auto;
-        /*width: 80%;*/
+        padding: 10px;
       }
 
-      .search-results-container {
+      .searchResultsContainer {
         display: flex;
         flex-flow: row wrap;
         justify-content: space-around;
         margin: 0 auto;
-        /*width: 80%;*/
-        /*padding: 5px;
-        border: 2px solid;*/
       }
 
-      .search-results-map {
-        /*padding: 5px;
-        border: 2px solid;*/
-      }
-
-      .search-results-list {
-        /*padding: 5px;
-        border: 2px solid;*/
-      }
-
-      .search-results-list-content {
+      .searchResultsListContent {
+        border: 1px groove;
         height: 400px;
-        width: 400px;
-        overflow: hidden;
         overflow-y: scroll;
-        border: 2px double;
-      }
-
-      .search-location-project-app-footer {
+        padding: 2px;
         text-align: center;
-      }
-
-      google-map {
-        height: 400px;
         width: 400px;
-        margin: 0 auto;
-        border: 2px double;
       }
-
     </style>
 
-    <div class="search-location-project-app-header">
+    <div class="searchLocationAppHeader">
       <app-header>
-        <app-toolbar sticky>
-          <h2 main-title>[[prop1]]</h2>
+        <app-toolbar>
+          <h2 main-title>SpaceCam</h2>
+          <div class="headerSubtitle">Your curiosity's final frontier</div>
         </app-toolbar>
       </app-header>
     </div>
 
-    <div class="search-query-container">
-      <paper-input always-float-label label="Location" id="searchText"></paper-input>
+    <div class="searchQueryContainer">
+      <paper-input always-float-label label="Location" id="searchText"
+          onkeypress="{{_checkEnterPressSearch}}"></paper-input>
       <paper-button raised on-click="_onSearchLocation">Search</paper-button>
     </div>
 
-    <div class="search-results-container">
+    <div class="searchResultsContainer">
       <div class="search-results-map">
         <h3>Map of Search</h3>
-        <google-map-search id="placesLibrary" query="[[searchQuery]]"
+        <geo-location latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
+        <google-map-search id="placesLibrary" query="{{searchQuery}}"
             results="{{results}}" map="{{map}}"></google-map-search>
-        <google-map map="{{map}}" api-key="AIzaSyAMRb-cQRvFBMsKxHKu9OtQE61cORj2b4Y"
-            id="map" fit-to-markers>
+        <google-map map="{{map}}" latitude="{{latitude}}" longitude="{{longitude}}"
+            api-key="AIzaSyAMRb-cQRvFBMsKxHKu9OtQE61cORj2b4Y" id="map" zoom="12"
+            fit-to-markers click-events>
           <template is="dom-repeat" items="{{results}}">
             <google-map-marker latitude="{{item.latitude}}"
-                longitude="{{item.longitude}}" title="{{item.name}}">
+                longitude="{{item.longitude}}" click-events on-click="{{_onClickMarker}}">
+              <div class="markerContent">
+                <h3>{{item.name}}</h3>
+                <div>{{item.formatted_address}}</div><br>
+                <template is="dom-if" if="[[item.opening_hours.open_now]]">Open now<br></template>
+                <template is="dom-if" if="[[!item.opening_hours.open_now]]">Closed<br></template>
+                <template is="dom-if" if="[[item.rating]]">Rating: {{item.rating}}<br></template>
+                <img class="markerIcon" src="{{item.icon}}" alt="icon" />
+              </div>
             </google-map-marker>
           </template>
         </google-map>
       </div>
-      <div class="search-results-list">
+      <div class="searchResultsList">
         <h3>List of Locations</h3>
-        <div class="search-results-list-content">
+        <div class="searchResultsListContent">
           <template is="dom-if" if="[[noListContent]]">
-            <div><h3>No location</h3></div>
+            <h3>No location</h3>
           </template>
           <template is="dom-if" if="[[!noListContent]]">
             <template is="dom-repeat" items="{{results}}">
-              <div><a on-click="_goToMarker">{{item.name}}</a></div>
+              <paper-button raised on-click="_onClickListElement" >
+                <div>{{item.name}}</div>
+              </paper-button>
             </template>
           </template>
         </div>
       </div>
     </div>
 
-    <div class="search-location-project-app-footer">
-      Cameron Malagar | 2017
+    <div class="searchLocationAppFooter">
+      Cameron Malagar © | 2017
     </div>
-
   </template>
 
   <script>
-
     class SearchLocationProjectApp extends Polymer.Element {
       static get is() { return 'search-location-project-app'; }
 
+      /**
+       * Polymer properties for the search-location-project-app custom element.
+       */
       static get properties() {
         return {
-          prop1: {
-            type: String,
-            value: 'Search Location Application'
-          },
-
+          /**
+            * The search query to be made when a search request is made to the
+            * Google Places API
+            */
           searchQuery: {
             type: String,
             notify: true
           },
 
+          /**
+            * The current latitude of the user's device
+            */
+          currentLatitude: {
+            type: Number
+          },
+
+          /**
+            * The current longitude of the user's device
+            */
+          currentLongitude: {
+            type: Number
+          },
+
+          /**
+            * The latitude specified in the map
+            */
+          latitude: {
+            type: Number
+          },
+
+          /**
+            * The longitude specified in the map
+            */
+          longitude: {
+            type: Number
+          },
+
+          /**
+            * The current result list of searches from the Google Places API
+            */
           results: {
             type: Object,
             notify: true
           },
 
+          /**
+            * A flag used to determine if there is any content
+            */
           noListContent: {
             type: Boolean,
             notify: true,
             value: true
           },
 
+          /**
+            * Reference to the Google Map API Object
+            */
           map: {
             type: Object,
             notify: true
@@ -158,42 +212,87 @@
         };
       }
 
-      static get observers() {
-        return [
-
-        ];
-      }
-
+      /**
+        * On load function for the element
+        */
       ready() {
         super.ready();
 
-        this.addEventListener('google-map-search-results', (e) => {
-          console.log("google-map-search-results: ");
-          console.log(e);
-          this.$.map.resize();
+        // If this event is called, create a new search with the given search
+        // query
+        this.addEventListener('enterPressed', (e) => {
+          this._onSearchLocation();
         });
 
-        this.addEventListener('google-map-search-place-details', (e) => {
-          console.log("google-map-search-place-details: ");
-          console.log(e);
+        // Waits until the geo-location element is fully loaded to get the
+        // current position of the device that is using the geo-location API and
+        // sets the center of the map to that location
+        this.addEventListener('geo-response', (e) => {
+          this.latitude = this.currentLatitude;
+          this.longitude = this.currentLongitude;
+        });
+
+        // If any of the results change, recalculate a center and check if there
+        // is still content to display for the list of locations
+        this.addEventListener('results-changed', (e) => {
+          this.noListContent = this.results.length == 0;
+          if (!this.noListContent) {
+            this.latitude = this.results[this.results.length -1].latitude;
+            this.longitude = this.results[this.results.length - 1].longitude;
+          }
           console.log(this.results);
         });
 
-        this.addEventListener('results-changed', (e) => {
-          console.log("results-changed");
-          console.log(e);
-          this.noListContent = this.results.length == 0;
+        // When a list element is clicked, then the map will change it's
+        // latitude and longitude to center where the clicked element is located
+        // and will zoom in for a better look at where the location is.
+        this.addEventListener('listElementClicked', (e) => {
+          this.$.map.zoom = 15;
+          this.latitude = e.detail.latitude;
+          this.longitude = e.detail.longitude;
         });
       }
 
+      /**
+        * Clears the map and contacts the Places Library to make a query with
+        * the new content
+        */
       _onSearchLocation() {
+        this.$.map.clear();
+        this.$.map.zoom = 12;
+        this.noListContent = true;
+        this.results = [];
+
         this.searchQuery = this.$.searchText.value;
-        console.log(this.searchQuery);
         this.$.placesLibrary.search();
       }
 
-      _goToMarker() {
-        console.log("_goToMarker called");
+      /**
+        * On click function for when a location button is clicked. It will pass
+        * search for more
+        */
+      _onClickListElement(e) {
+        var place = e.model.get('item');
+        this.dispatchEvent(new CustomEvent('listElementClicked',
+          {
+            detail: {
+              id: place.place_id,
+              latitude: place.latitude,
+              longitude: place.longitude
+            },
+            composed: true
+          }
+        ));
+      }
+
+      /**
+        * Enables the search input area to initiate search of new map markers
+        * when enter is pressed
+        */
+      _checkEnterPressSearch(e) {
+        if (e.keyCode === 13) {
+          this.dispatchEvent(new CustomEvent('enterPressed', {composed: true}));
+        }
       }
     }
 

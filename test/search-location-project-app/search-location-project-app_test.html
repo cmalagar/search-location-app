@@ -19,32 +19,31 @@
       </template>
     </test-fixture>
 
-    <test-fixture id="ChangedPropertyTestFixture">
+    <test-fixture id="GeolocationTestFixture">
       <template>
-        <search-location-project-app prop1="new-prop1"></search-location-project-app>
+        <geo-location latitude="{{currentLatitude}}" longitude="{{currentLongitude}}"></geo-location>
       </template>
     </test-fixture>
 
     <script>
       suite('search-location-project-app', function() {
+        test('add geo-location element to have the same current location', function() {
+          var geolocationElement = fixture('GeolocationTestFixture');
+          var applicationElement = fixture('BasicTestFixture');
 
-        test('instantiating the element with default properties works', function() {
+          assert.equal(geolocationElement.latitude, applicationElement.currentLatitude);
+          assert.equal(geolocationElement.longitude, applicationElement.currentLongitude);
+        });
+
+        test('load list of locations empty', function() {
           var element = fixture('BasicTestFixture');
-          assert.equal(element.prop1, 'search-location-project-app');
-          var elementShadowRoot = element.shadowRoot;
-          var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello search-location-project-app!');
-        });
+          element.results = [];
+          var applicationShadowRoot = applicationElement.shadowRoot;
+          var applicationHeader = applicationShadowRoot.querySelector(".searchResultsListContent h3");
 
-        test('setting a property on the element works', function() {
-          // Create a test fixture
-          var element = fixture('ChangedPropertyTestFixture');
-          assert.equal(element.prop1, 'new-prop1');
-          var elementShadowRoot = element.shadowRoot;
-          var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello new-prop1!');
+          console.log(applicationHeader);
+          assert.equal("<h3>No location</h3>", applicationHeader);
         });
-
       });
     </script>
 
